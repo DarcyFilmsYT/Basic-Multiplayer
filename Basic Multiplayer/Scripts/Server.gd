@@ -6,9 +6,11 @@ var other_player = preload("res://Player/Player Other.tscn")
 
 var connected = false
 
+var ip = "127.0.0.1"
+
 func join():
 	var peer = NetworkedMultiplayerENet.new()
-	peer.create_client("127.0.0.1", 6969)
+	peer.create_client(ip, 6969)
 	get_tree().network_peer = peer
 	peer.connect("connection_succeeded", self, "joined_server")
 	peer.connect("connection_failed", self, "failed_connection")
@@ -20,7 +22,8 @@ func joined_server():
 	rpc_id(1, "request_players")
 
 func failed_connection():
-	print("couldn't connect to test IP")
+	get_node("../World/Main menu/HBoxContainer/VBoxContainer/Join").disabled = false
+	print("couldn't connect to " + ip)
 
 remote func request_players():
 	var player_id = get_tree().get_rpc_sender_id()
@@ -88,11 +91,11 @@ func player_state(position):
 remote func share_player_state(position):
 	var player_id = get_tree().get_rpc_sender_id()
 	if get_tree().get_network_unique_id() == 1:
-		get_node("../World/Other Players/" + str(player_id)).new_position = position
+		get_node("../World/Other Players/" + str(player_id)).global_transform.origin = position
 	else:
 		rpc_id(0, "recieve_player_state", player_id, position)
 
 remote func recieve_player_state(player_id, position):
 	if get_tree().get_rpc_sender_id() == 1:
 		if get_node("../World/Other Players").has_node(str(player_id)):
-			get_node("../World/Other Players/" + str(player_id)).new_position = position
+			get_node("../World/Other Players/" + str(player_id)).global_transform.origin = position
