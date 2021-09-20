@@ -84,16 +84,15 @@ remote func despawn_player(player_id):
 
 func player_state(position):
 	if get_tree().get_network_unique_id() == 1:
-		rpc_id(0, "recieve_player_state", 1, position)
+		rpc_unreliable_id(0, "recieve_player_state", 1, position)
 	else:
-		rpc_id(1, "share_player_state", position)
+		rpc_unreliable_id(1, "share_player_state", position)
 
 remote func share_player_state(position):
 	var player_id = get_tree().get_rpc_sender_id()
 	if get_tree().get_network_unique_id() == 1:
 		get_node("../World/Other Players/" + str(player_id)).global_transform.origin = position
-	else:
-		rpc_id(0, "recieve_player_state", player_id, position)
+		rpc_unreliable_id(0, "recieve_player_state", player_id, position)
 
 remote func recieve_player_state(player_id, position):
 	if get_tree().get_rpc_sender_id() == 1:
